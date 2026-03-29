@@ -16,13 +16,26 @@
 
   // --- Skip Logic ---
 
+  // Append a timestamped entry to the persistent log in chrome.storage.local.
+  // Keeps the last 100 entries to avoid unbounded growth.
+  function addLogEntry(message) {
+    const entry = `[${new Date().toLocaleTimeString()}] ${message}`;
+    console.log('[AdSkipper]', entry);
+    chrome.storage.local.get({ adSkipperLog: [] }, (data) => {
+      const log = data.adSkipperLog;
+      log.unshift(entry); // newest first
+      if (log.length > 100) log.length = 100;
+      chrome.storage.local.set({ adSkipperLog: log });
+    });
+  }
+
   // Attempt to click any visible skip button on the page.
   function trySkipAd() {
     for (const selector of SKIP_BUTTON_SELECTORS) {
       const btn = document.querySelector(selector);
       if (btn) {
         btn.click();
-        console.log('[AdSkipper] Skipped ad via', selector);
+        addLogEntry(`Skipped ad (${selector})`);
         return true;
       }
     }
@@ -42,7 +55,7 @@
     if (video && !video.muted) {
       video.muted = true;
       isMutedByUs = true;
-      console.log('[AdSkipper] Muted during ad.');
+      addLogEntry('Muted — ad started');
     }
   }
 
@@ -51,7 +64,7 @@
     if (video && isMutedByUs && video.muted) {
       video.muted = false;
       isMutedByUs = false;
-      console.log('[AdSkipper] Unmuted after ad.');
+      addLogEntry('Unmuted — ad ended');
     }
   }
 

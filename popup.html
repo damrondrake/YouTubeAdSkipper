@@ -2,13 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>YouTube Ad Skipper</title>
   <style>
     body {
       font-family: sans-serif;
-      width: 200px;
-      padding: 16px;
+      width: 280px;
+      padding: 14px;
       margin: 0;
       background: #0f0f0f;
       color: #fff;
@@ -23,6 +22,7 @@
       align-items: center;
       gap: 8px;
       font-size: 13px;
+      margin-bottom: 12px;
     }
     .dot {
       width: 10px;
@@ -31,14 +31,55 @@
       background: #00c853;
       flex-shrink: 0;
     }
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .log-header span {
+      font-size: 11px;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    #clear-btn {
+      font-size: 11px;
+      background: none;
+      border: 1px solid #444;
+      color: #aaa;
+      border-radius: 3px;
+      padding: 1px 6px;
+      cursor: pointer;
+    }
+    #clear-btn:hover { border-color: #ff0000; color: #ff0000; }
+    #log {
+      background: #1a1a1a;
+      border-radius: 4px;
+      padding: 8px;
+      height: 160px;
+      overflow-y: auto;
+      font-size: 12px;
+      color: #ccc;
+      line-height: 1.6;
+    }
+    #log .empty {
+      color: #555;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
   <h1>YouTube Ad Skipper</h1>
   <div class="status">
-    <div class="dot"></div>
+    <div class="dot" id="dot"></div>
     <span id="status-text">Active on YouTube</span>
   </div>
+  <div class="log-header">
+    <span>Activity log</span>
+    <button id="clear-btn">Clear</button>
+  </div>
+  <div id="log"><span class="empty">No activity yet.</span></div>
   <script src="popup.js"></script>
 </body>
 </html>
