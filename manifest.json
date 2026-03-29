@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Ad Skipper",
+  "version": "1.0",
+  "description": "Automatically skips YouTube ads and mutes the tab during ads.",
+  "permissions": ["tabs"],
+  "content_scripts": [
+    {
+      "matches": ["*://www.youtube.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "YouTube Ad Skipper"
+  }
+}

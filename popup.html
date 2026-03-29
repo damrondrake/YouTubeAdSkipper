@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube Ad Skipper</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      width: 200px;
+      padding: 16px;
+      margin: 0;
+      background: #0f0f0f;
+      color: #fff;
+    }
+    h1 {
+      font-size: 14px;
+      margin: 0 0 8px;
+      color: #ff0000;
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #00c853;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>YouTube Ad Skipper</h1>
+  <div class="status">
+    <div class="dot"></div>
+    <span id="status-text">Active on YouTube</span>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
