@@ -32,39 +32,47 @@
 
   // --- Skip Logic ---
 
-  // Dispatch a realistic mouse click event on an element.
-  // YouTube's player ignores bare .click() calls on some button variants —
-  // dispatching a full MouseEvent with bubbles:true is required.
+  // Dispatch a realistic mouse click event on an element (fallback strategy).
   function simulateClick(el) {
     el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
     el.dispatchEvent(new MouseEvent('mouseup',   { bubbles: true, cancelable: true, view: window }));
     el.dispatchEvent(new MouseEvent('click',     { bubbles: true, cancelable: true, view: window }));
   }
 
-  // Find and click the skip button. Returns true if a button was found and clicked.
+  // Skip the ad by seeking the video element to its end.
+  // This is the most reliable strategy because:
+  //   1. YouTube's skip button rejects synthetic clicks (event.isTrusted === false).
+  //   2. The ad itself is just a <video> — seeking it to duration makes YouTube
+  //      immediately advance to the next video (the real content).
+  // We also try clicking the skip button as a secondary fallback.
   function trySkipAd() {
-    // Bail out if we recently attempted a skip — prevents flooding clicks on every observer tick.
+    // Bail out if we recently attempted a skip — prevents flooding on every observer tick.
     if (skipCooldown) return false;
 
+    const video = document.querySelector(VIDEO_SELECTOR);
+    if (video && !isNaN(video.duration) && video.duration > 0 && video.currentTime < video.duration) {
+      // Seek to the end of the ad video. YouTube will transition to the next video automatically.
+      video.currentTime = video.duration;
+      addLogEntry(`Skipped ad (seeked to end, ${video.duration.toFixed(1)}s)`);
+
+      skipCooldown = true;
+      setTimeout(() => { skipCooldown = false; }, 1000);
+      return true;
+    }
+
+    // Fallback: try clicking the skip button if the video seek isn't possible for some reason.
     for (const selector of SKIP_BUTTON_SELECTORS) {
       const container = document.querySelector(selector);
       if (!container) continue;
-
-      // YouTube's modern skip button wraps an inner <button> element.
-      // We need to click the inner element, not just the outer container.
       const clickTarget = container.querySelector('button') || container;
-
-      // Only attempt the click if the element has actual dimensions (i.e. it's visible).
       const rect = clickTarget.getBoundingClientRect();
       if (rect.width === 0 && rect.height === 0) continue;
 
       simulateClick(clickTarget);
-      addLogEntry(`Skip button clicked (${selector})`);
+      addLogEntry(`Skip button clicked fallback (${selector})`);
 
-      // Set a cooldown so we don't re-fire until the DOM settles.
       skipCooldown = true;
-      setTimeout(() => { skipCooldown = false; }, 2000);
-
+      setTimeout(() => { skipCooldown = false; }, 1000);
       return true;
     }
     return false;
