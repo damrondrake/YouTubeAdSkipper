@@ -2,13 +2,6 @@
 // Runs on all YouTube pages and handles ad skipping + muting logic.
 
 (function () {
-  // Selectors YouTube uses for the skip button (they rotate between these).
-  const SKIP_BUTTON_SELECTORS = [
-    '.ytp-skip-ad-button',
-    '.ytp-ad-skip-button',
-    '.ytp-ad-skip-button-modern',
-  ];
-
   // The video player element selector.
   const VIDEO_SELECTOR = 'video.html5-main-video';
 
@@ -32,13 +25,6 @@
 
   // --- Skip Logic ---
 
-  // Dispatch a realistic mouse click event on an element (fallback strategy).
-  function simulateClick(el) {
-    el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
-    el.dispatchEvent(new MouseEvent('mouseup',   { bubbles: true, cancelable: true, view: window }));
-    el.dispatchEvent(new MouseEvent('click',     { bubbles: true, cancelable: true, view: window }));
-  }
-
   // Skip the ad by seeking the video element to its end.
   // This is the most reliable strategy because:
   //   1. YouTube's skip button rejects synthetic clicks (event.isTrusted === false).
@@ -50,29 +36,15 @@
     if (skipCooldown) return false;
 
     const video = document.querySelector(VIDEO_SELECTOR);
-    if (video && !isNaN(video.duration) && video.duration > 0 && video.currentTime < video.duration) {
-      // Seek to the end of the ad video. YouTube will transition to the next video automatically.
+    if (video && !isNaN(video.duration) && video.duration > 0 && video.currentTime < video.duration - 0.1) {
+      // Seek to the end of the ad video. YouTube will transition to the real video shortly after.
+      // Note: there's typically a ~1–2s delay after this while YouTube loads the next video —
+      // this is unavoidable, it's YouTube's transition time, not something we can click through.
       video.currentTime = video.duration;
       addLogEntry(`Skipped ad (seeked to end, ${video.duration.toFixed(1)}s)`);
 
       skipCooldown = true;
-      setTimeout(() => { skipCooldown = false; }, 1000);
-      return true;
-    }
-
-    // Fallback: try clicking the skip button if the video seek isn't possible for some reason.
-    for (const selector of SKIP_BUTTON_SELECTORS) {
-      const container = document.querySelector(selector);
-      if (!container) continue;
-      const clickTarget = container.querySelector('button') || container;
-      const rect = clickTarget.getBoundingClientRect();
-      if (rect.width === 0 && rect.height === 0) continue;
-
-      simulateClick(clickTarget);
-      addLogEntry(`Skip button clicked fallback (${selector})`);
-
-      skipCooldown = true;
-      setTimeout(() => { skipCooldown = false; }, 1000);
+      setTimeout(() => { skipCooldown = false; }, 2000);
       return true;
     }
     return false;
